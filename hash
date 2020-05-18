@@ -1,0 +1,95 @@
+# подключам библиотеку
+import math
+
+
+# классдля хранения элемента
+class Entry(object):
+    # функция для печати класса
+    def __str__(self):
+        return str(self.value)
+
+    def __init__(self, key=0, value=0):
+        self.key = key
+        self.value = value
+
+
+def AuxiliaryHash(key, size):
+    # кофф шага
+    A = 0.618
+    return int(math.floor(size * ((key * A) % 1)))
+
+
+def LinearHash(key, i, size):
+    return (AuxiliaryHash(key, size) + i) % size
+
+
+class LinearHashtable(object):
+    def get(self, key):
+        i = 0
+        entry = self.entries[self.hash(key, i)]
+        while entry is None or entry.key != key:
+            i += 1
+            if i == self.size:
+                return None
+            entry = self.entries[self.hash(key, i)]
+        return entry.value
+
+    def search(self, key):
+        i = 0
+        entry = self.entries[self.hash(key, i)]
+        search_result = str(self.hash(key, i)) + " "
+        while entry is None or entry.key != key:
+            i += 1
+            if i == self.size:
+                return search_result + "-1"
+            entry = self.entries[self.hash(key, i)]
+            search_result += str(self.hash(key, i)) + " "
+        return search_result
+
+    def put(self, key, value):
+        i = 0
+        entry = self.entries[self.hash(key, i)]
+        while entry and entry.key != key:
+            i += 1
+            if i == self.size:
+                # raise Exception("Table is Full!")
+                return
+            entry = self.entries[self.hash(key, i)]
+        if entry is None:
+            entry = Entry(key=key, value=value)
+            self.entries[self.hash(key, i)] = entry
+        else:
+            entry.value = value
+
+    def insert(self, value):
+        self.put(value, value)
+
+    def hash(self, key, i):
+        return LinearHash(key, i, self.size)
+
+    def print_algoritm(self, key, i):
+        text = '(int(math.floor({size} * (({key} * {A}) % 1))) + {i}) % {size}'.format(
+            size=self.size, key=key, A=0.618, i=i
+        )
+        return text
+
+    def __str__(self):
+        lines = []
+        for i in range(len(self.entries)):
+            if not self.DEBUG:
+                if not self.entries[i]:
+                    lines.append("" + str(i) + "\t" + "-1")
+                else:
+                    lines.append("" + str(i) + "\t" + str(self.entries[i].value))
+            else:
+                if not self.entries[i]:
+                    lines.append("" + str(i) + "\t" + "-1")
+                else:
+                    lines.append("" + str(i) + "\t" + self.print_algoritm(i, self.entries[i].value) + '=' + str(self.entries[i].value))
+        return "\n".join(lines)
+
+    def __init__(self, size=32, debug=False):
+        self.i = 0
+        self.size = size
+        self.entries = [None] * self.size
+        self.DEBUG = debug
